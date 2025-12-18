@@ -1,14 +1,14 @@
 import axios from "axios"
 
 export  const axiosInstance= axios.create({
-    baseURL:"http://localhost:5000/api/users",
+    baseURL:"https://event-platform-7gnx.onrender.com/api/users",
     withCredentials:true
 })
 
 
 
  const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://event-platform-7gnx.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {
