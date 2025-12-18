@@ -10,9 +10,111 @@
 -   👤 **User Profiles**: Manage personal information and view registered/created events.
 -   ⚡ **Responsive Design**: Optimized for a seamless experience across various devices.
 -   🔑 **Secure API**: Robust backend API for managing all event and user data.
+   
+RSVP System (Critical Business Logic)
+
+Join / Leave events
+Capacity enforcement (no overbooking)
+Prevent duplicate RSVPs
+Real-time attendee count updates
+Joined events shown on dashboard
+
+To solve the RSVP capacity and concurrency-
+Multiple users may attempt to RSVP for the same event simultaneously, which can lead to:
+Overbooking
+Inconsistent attendee counts
+Duplicate RSVPs
+
+ Strategy
+
+This project uses MongoDB transactions combined with atomic updates to guarantee data integrity under concurrency.
+
+🧩 How the RSVP System Works
+1️⃣ Start a MongoDB Transaction
+
+const session = await mongoose.startSession();
+session.startTransaction();
+
+2️⃣ Atomically Increment Attendees Count (Capacity Check)
+
+const updatedEvent = await Event.findOneAndUpdate(
+  {
+    _id: eventId,
+    $expr: { $lt: ["$attendeesCount", "$capacity"] }
+  },
+  { $inc: { attendeesCount: 1 } },
+  { new: true, session }
+);
+
+
+✔ Ensures attendeesCount < capacity
+✔ Prevents race conditions
+✔ Fails safely if event is full
+
+3️⃣ Create RSVP Document (Duplicate Prevention)
+
+await RSVP.create(
+  [{ user: userId, event: eventId }],
+  { session }
+);
+
+
+Database-level unique constraint:
+
+rsvpSchema.index({ user: 1, event: 1 }, { unique: true });
+
+
+✔ Prevents multiple RSVPs per user
+✔ Enforced at database level
+
+4️⃣ Commit or Rollback Transaction
+await session.commitTransaction();
+
+
+On any error:
+
+await session.abortTransaction();
+
+🔄 Leaving an Event
+
+Deletes RSVP document
+Atomically decrements attendeesCount
+Uses the same transactional guarantees
+
+📊 Dashboard
+
+My Created Events
+Events I Joined
+Edit / delete owned events
+
+🔍 Search
+Search events by title or location
+Instant client-side filtering
+
+🎨 UI / UX
+
+Modern responsive UI
+Dark & Light theme (CSS variables, no Tailwind config)
+Clean cards, modals, and navigation
+Mobile-friendly design
 
 ## 🛠️ Tech Stack
+Frontend
 
+React (Vite)
+React Router
+Axios
+Tailwind CSS (utility-only, no custom config)
+Context API
+
+Backend
+
+Node.js
+Express.js
+MongoDB + Mongoose
+JWT Authentication
+MongoDB Transactions
+Multer + Cloudinary (image upload)
 
 ## 🚀 Quick Start
 
@@ -219,32 +321,7 @@ Users can register and log in to receive a JWT. This token must be included in t
 
 | `GET`  | `/api/users/me/events`      | Get events created or registered by the user.     | Yes                     |
 
-## 🤝 Contributing
 
-We welcome contributions to the Event Platform! To contribute, please follow these steps:
-
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/your-feature-name`).
-3.  Make your changes.
-4.  Commit your changes (`git commit -m 'feat: Add new feature'`).
-5.  Push to the branch (`git push origin feature/your-feature-name`).
-6.  Open a Pull Request.
-
-Please see our [Contributing Guide](CONTRIBUTING.md) <!-- TODO: Create CONTRIBUTING.md --> for more details on our development process and coding standards.
-
-### Development Setup for Contributors
-The development setup is the same as described in the [Quick Start](#🚀-quick-start) section.
-
-## 📄 License
-
-This project is licensed under the [LICENSE_NAME](LICENSE) - see the `LICENSE` file for details. <!-- TODO: Specify license (e.g., MIT, Apache 2.0) and create LICENSE file -->
-
-## 🙏 Acknowledgments
-
--   Built with Node.js and Express.js for the backend.
--   Powered by React for an interactive user interface.
--   Data stored and managed using MongoDB.
--   Authentication secured with JSON Web Tokens.
 
 
 </div>
