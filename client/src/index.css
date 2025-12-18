@@ -1,0 +1,25 @@
+@import "tailwindcss";
+/* index.css */
+.input {
+  @apply w-full p-2 border rounded bg-transparent dark:border-zinc-700;
+}
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f1f5f9;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --border: #e2e8f0;
+  --primary: #14b8a6;
+  --danger: #ef4444;
+}
+
+/* DARK THEME */
+[data-theme="dark"] {
+  --bg: #020617;
+  --bg-secondary: #0f172a;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #1e293b;
+  --primary: #2dd4bf;
+  --danger: #f87171;
+}
